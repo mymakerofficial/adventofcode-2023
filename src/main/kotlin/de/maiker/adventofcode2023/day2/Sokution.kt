@@ -64,5 +64,17 @@ fun partOne(lines: List<String>): String {
 }
 
 fun partTwo(lines: List<String>): String {
-    TODO()
+    val maxs = lines
+        .map {parseLine(it) }
+        .map { (_, events) ->
+            val groups = events
+                .groupBy { (color, _) -> color }
+                .map { (_, events) -> events.map { (_, amount) -> amount } }
+
+            val maxs = groups.map { it.max() }
+
+            maxs.reduce { acc, i -> acc * i }
+        }
+
+    return maxs.sum().toString()
 }
