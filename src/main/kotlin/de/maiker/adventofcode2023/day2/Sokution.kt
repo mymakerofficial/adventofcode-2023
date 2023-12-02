@@ -47,38 +47,50 @@ fun parseLine(line: String): Pair<Int, List<Pair<String, Int>>> {
     return id to events
 }
 
+fun List<Pair<String, Int>>.isValidGame(): Boolean {
+    return !this.any { (color, amount) ->
+        legalAmounts[color]!! < amount
+    }
+}
+
 fun partOne(lines: List<String>): String {
     val sum = lines
         .map {parseLine(it) }
         .map { (id, events) ->
-            val invalid = events.any { (color, amount) ->
-                legalAmounts[color]!! < amount
-            }
-
-            id to !invalid
+            id to events.isValidGame()
         }.sumOf { (id, valid) ->
-            if (valid) {
-                id
-            } else {
-                0
-            }
+            if (valid) id else 0
         }
 
     return sum.toString()
 }
 
+fun List<Pair<String, Int>>.groupByColor(): Map<String, List<Pair<String, Int>>> {
+    return this.groupBy { (color, _) -> color }
+}
+
+fun Map<String, List<Pair<String, Int>>>.dropColorInformation(): List<List<Int>> {
+    return this.map { (_, events) ->
+        events.map { (_, amount) -> amount }
+    }
+}
+
+fun List<Int>.product(): Int {
+    return this.reduce { acc, i -> acc * i }
+}
+
 fun partTwo(lines: List<String>): String {
-    val maxs = lines
-        .map {parseLine(it) }
+    val products = lines
+        .map { parseLine(it) }
         .map { (_, events) ->
             val groups = events
-                .groupBy { (color, _) -> color }
-                .map { (_, events) -> events.map { (_, amount) -> amount } }
+                .groupByColor()
+                .dropColorInformation()
 
             val maxs = groups.map { it.max() }
 
-            maxs.reduce { acc, i -> acc * i }
+            maxs.product()
         }
 
-    return maxs.sum().toString()
+    return products.sum().toString()
 }
