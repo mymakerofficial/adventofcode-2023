@@ -26,14 +26,18 @@ fun String.getFirstNumber(): Int {
     return this.getFirstThat { it.isDigit() }.toInt()
 }
 
+fun String.cleanUp(): String {
+    return this
+        .filterNot { it == ',' || it == ';' }
+        .dropWhile { it != ':' }
+        .drop(2)
+}
+
 fun parseLine(line: String): Pair<Int, List<Pair<String, Int>>> {
     val id = line.getFirstNumber()
 
     val events = line
-        .replace(",", "")
-        .replace(";", "")
-        .dropWhile { it != ':' }
-        .drop(2)
+        .cleanUp()
         .split(" ")
         .windowed(2, 2)
         .map { (amount, color) ->
