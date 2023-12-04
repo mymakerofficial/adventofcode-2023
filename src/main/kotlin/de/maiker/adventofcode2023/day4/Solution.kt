@@ -1,5 +1,6 @@
 package de.maiker.adventofcode2023.day4
 
+import de.maiker.adventofcode2023.lib.getFirstNumber
 import java.io.File
 import kotlin.math.pow
 
@@ -14,44 +15,55 @@ fun main() {
 }
 
 class Card(
+    private val number: Int,
     private val winningNumbers: Set<Int>,
     private val playerNumbers: Set<Int>,
 ) {
-    override fun toString() = "Card(winningNumbers=$winningNumbers, playerNumbers=$playerNumbers, winningPoints()=${winningPoints()}, score()=${score()}"
+    override fun toString() = "Card(number=$number, winningNumbers=$winningNumbers, playerNumbers=$playerNumbers, winningCount()=${winningCount()}, points()=${points()}), winsCards()=${winsCards()})"
 
-    private fun winningPoints(): Int {
+    private fun winningCount(): Int {
         return (winningNumbers intersect playerNumbers).size
     }
 
-    // first winning number gives 1 point, each additional winning number doubles the score
-    fun score(): Int {
-        return 2.0.pow(winningPoints() - 1).toInt()
+    // first winning number gives 1 point, each additional winning number doubles the points
+    fun points(): Int {
+        return 2.0.pow(winningCount() - 1).toInt()
+    }
+
+    fun winsCards(): List<Int> {
+        return 0.until(winningCount()).map { number + it + 1 }
     }
 }
 
 fun parseLine(line: String): Card {
-    val (winningStringPart, playerStringPart) = line.split(":").last().split("|")
+    val (firstPart, secondPart) = line.split(":").last().split("|")
 
-    val winning = winningStringPart
+    val gameNumber = line.getFirstNumber()
+
+    val winning = firstPart
         .split(" ")
         .filter { it.isNotBlank() }
         .map { it.toInt() }
         .toSet()
 
-    val player = playerStringPart
+    val player = secondPart
         .split(" ")
         .filter { it.isNotBlank() }
         .map { it.toInt() }
         .toSet()
 
-    return Card(winning, player)
+    return Card(gameNumber, winning, player)
 }
 
 fun partOne(lines: List<String>): Int {
     val cards = lines.map { parseLine(it) }
-    return cards.sumOf { it.score() }
+    return cards.sumOf { it.points() }
 }
 
 fun partTwo(lines: List<String>): Int {
+    val originalCards = lines.map { parseLine(it) }
+
+    originalCards.forEach { println(it) }
+
     TODO()
 }
