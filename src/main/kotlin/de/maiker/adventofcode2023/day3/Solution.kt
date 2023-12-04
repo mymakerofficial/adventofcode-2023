@@ -16,7 +16,7 @@ fun Char.isSymbol(): Boolean {
     return !this.isDigit() && !this.isLetter() && this != '.'
 }
 
-fun blup(lines: Triple<String?, String, String?>, startIndex: Int, endIndex: Int): Boolean {
+fun hasAdjacentSymbol(lines: Triple<String?, String, String?>, startIndex: Int, endIndex: Int): Boolean {
     val (previous, current, next) = lines
 
     val marginStartIndex = if (startIndex == 0) 0 else startIndex - 1
@@ -29,18 +29,64 @@ fun blup(lines: Triple<String?, String, String?>, startIndex: Int, endIndex: Int
     return previousContains || currentContains || nextContains
 }
 
+fun findNumbersWithIndices(line: String): List<Triple<Int /*number*/, Int /*start*/, Int /*end*/>> {
+    val digitsWithIndices = line
+        .mapIndexed { index, c ->
+            index to c
+        }
+        .filter { (_, c) ->
+            c.isDigit()
+        }
+
+    val groupedDigitsWithIndices = digitsWithIndices.fold(mutableListOf<MutableList<Pair<Int, Char>>>()) { acc, element ->
+        val (index, char) = element
+        val last = acc.lastOrNull()
+
+        if (last?.lastOrNull()?.first == index - 1) {
+            last.add(index to char)
+        } else {
+            acc.add(mutableListOf(index to char))
+        }
+
+        acc
+    }
+
+    return groupedDigitsWithIndices.map {
+        val start = it.first().first
+        val end = it.last().first
+
+        val number = it.map { (_, char) -> char }.joinToString("").toInt()
+
+        Triple(
+            number,
+            start,
+            end
+        )
+    }
+}
+
 fun partOne(lines: List<String>): String {
-    lines.forEachIndexed { index, line ->
+    val sums = lines.mapIndexed { index, line ->
         val currentLines = Triple(
             lines.getOrNull(index - 1),
             line,
             lines.getOrNull(index + 1)
         )
 
-        // TODO: find start and end indices of each number in the line
+        val numbersWithIndices = findNumbersWithIndices(line)
+
+        val numbersWithAdjacentSymbol = numbersWithIndices.filter { (_, start, end) ->
+            hasAdjacentSymbol(currentLines, start, end)
+        }
+
+        val sum = numbersWithAdjacentSymbol.sumOf { (number, _, _) ->
+            number
+        }
+
+        sum
     }
 
-    return ""
+    return sums.sum().toString()
 }
 
 fun partTwo(lines: List<String>): String {
