@@ -15,13 +15,15 @@ fun main() {
 }
 
 class Card(
-    private val number: Int,
+    val number: Int,
     private val winningNumbers: Set<Int>,
     private val playerNumbers: Set<Int>,
 ) {
-    override fun toString() = "Card(number=$number, winningNumbers=$winningNumbers, playerNumbers=$playerNumbers, winningCount()=${winningCount()}, points()=${points()}), winsCards()=${winsCards()})"
+    override fun toString() = "Card(number=$number, instancesCount=$instancesCount, winningCount()=${winningCount()}, winsCardNumbers()=${winsCardNumbers()}, winningNumbers=$winningNumbers, playerNumbers=$playerNumbers)"
 
-    private fun winningCount(): Int {
+    var instancesCount = 1
+
+    fun winningCount(): Int {
         return (winningNumbers intersect playerNumbers).size
     }
 
@@ -30,8 +32,8 @@ class Card(
         return 2.0.pow(winningCount() - 1).toInt()
     }
 
-    fun winsCards(): List<Int> {
-        return 0.until(winningCount()).map { number + it + 1 }
+    fun winsCardNumbers(): List<Int> {
+        return (1..<winningCount() + 1).map { number + it }
     }
 }
 
@@ -61,9 +63,13 @@ fun partOne(lines: List<String>): Int {
 }
 
 fun partTwo(lines: List<String>): Int {
-    val originalCards = lines.map { parseLine(it) }
+    val cards = lines.map { parseLine(it) }
 
-    originalCards.forEach { println(it) }
+    cards.forEach { card ->
+        cards.filter { it.number in card.winsCardNumbers() }.forEach {
+            it.instancesCount += card.instancesCount
+        }
+    }
 
-    TODO()
+    return cards.sumOf { it.instancesCount }
 }
